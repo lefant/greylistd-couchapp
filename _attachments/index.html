@@ -25,6 +25,13 @@
       <div class="jqPlot" id="count-pie"></div>
     </div>
 
+    <div id="netmask" class="prepend-1 span-22 colborder last">
+      <div class="jqPlot" id="netmask-grey-items-bar"></div>
+      <div class="jqPlot" id="netmask-white-items-bar"></div>
+      <div class="jqPlot" id="netmask-grey-count-bar"></div>
+      <div class="jqPlot" id="netmask-white-count-bar"></div>
+    </div>
+
     <h2 class="span-24">debug leftover</h2>
     <ul id="stats"></ul>
 
@@ -108,6 +115,26 @@
 
       }});
 
+      ["netmask-grey-items","netmask-white-items","netmask-grey-count","netmask-white-count"].forEach(function(view)
+      {
+        app.view(view, {group_level: 1, success: function(json) {
+          var data = [];
+          json.rows.map(function(row) {
+            data.push( [row.key, row.value] );
+          });
+  
+          var jqplot = $.jqplot(view + '-bar', [data], {
+            title: view + ' bar',
+            series:[
+              {label:'count', renderer:$.jqplot.BarRenderer}, 
+            ],
+            axes:{
+              xaxis:{renderer:$.jqplot.CategoryAxisRenderer}, 
+              yaxis:{min:0}
+            }
+          });
+        }});
+      });
 
     });
 
