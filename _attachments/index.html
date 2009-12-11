@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>greylistd-couchdb stats</title>
+    <link rel="stylesheet" href="style/main.css" type="text/css">
+
+    <link rel="stylesheet" type="text/css" href="vendor/jquery.jqplot/jquery.jqplot.css" />
+  </head>
+  <body>
+    <h1>greylistd-couchdb stats</h1>
+    <ul id="stats"></ul>
+
+    <div class="jqPlot" id="items-bar" style="height:320px; width:480px;"></div>
+    <div class="jqPlot" id="items-pie" style="height:320px; width:480px;"></div>
+    <div class="jqPlot" id="count-bar" style="height:320px; width:480px;"></div>
+    <div class="jqPlot" id="count-pie" style="height:320px; width:480px;"></div>
+
+  </body>
+  <script src="/_utils/script/json2.js"></script>
+  <script src="/_utils/script/jquery.js?1.3.1"></script>
+  <script src="/_utils/script/jquery.couch.js?0.9.0"></script>
+  <script src="vendor/couchapp/jquery.couchapp.js"></script>
+
+  <script src="vendor/jquery.jqplot/jquery.jqplot.js"></script>
+  <script src="vendor/jquery.jqplot/plugins/jqplot.categoryAxisRenderer.min.js"></script>
+  <script src="vendor/jquery.jqplot/plugins/jqplot.barRenderer.min.js"></script>
+  <script src="vendor/jquery.jqplot/plugins/jqplot.pieRenderer.min.js"></script>
+
+  <script type="text/javascript" charset="utf-8">
+    $.CouchApp(function(app) {
+      app.view("stats",{group_level: 1, success: function(json) {
+        $("#stats").html(json.rows.map(function(row) {
+          return '<li>'+row.key+' : '+row.value+'</li>';
+        }).join(''));
+      }});
+
+      app.view("items",{group_level: 1, success: function(json) {
+        data = [];
+        json.rows.map(function(row) {
+          data.push( [row.key, row.value] );
+        });
+
+        $.jqplot('items-bar', [data], {
+          title: 'items bar',
+          series:[
+            {label:'items', renderer:$.jqplot.BarRenderer}, 
+          ],
+          axes:{
+            xaxis:{renderer:$.jqplot.CategoryAxisRenderer}, 
+            yaxis:{min:0}
+          }
+        });
+
+        $.jqplot('items-pie', [data], {
+          title: 'items pie',
+          seriesDefaults:{renderer:$.jqplot.PieRenderer, rendererOptions:{sliceMargin:8}},
+          legend:{show:true}
+        });
+
+      }});
+
+      app.view("count",{group_level: 1, success: function(json) {
+        data = [];
+        json.rows.map(function(row) {
+          data.push( [row.key, row.value] );
+        });
+
+        $.jqplot('count-bar', [data], {
+          title: 'count bar',
+          series:[
+            {label:'count', renderer:$.jqplot.BarRenderer}, 
+          ],
+          axes:{
+            xaxis:{renderer:$.jqplot.CategoryAxisRenderer}, 
+            yaxis:{min:0}
+          }
+        });
+
+        $.jqplot('count-pie', [data], {
+          title: 'count pie',
+          seriesDefaults:{renderer:$.jqplot.PieRenderer, rendererOptions:{sliceMargin:8}},
+          legend:{show:true}
+        });
+
+      }});
+
+
+    });
+
+  </script>
+
+</html>
