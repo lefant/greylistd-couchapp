@@ -1,143 +1,42 @@
-<!DOCTYPE html>
-<html>
+<?xml version="1.0" encoding="utf-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
   <head>
-    <title>greylistd-couchdb stats</title>
-    <link rel="stylesheet" href="style/main.css" type="text/css">
+    <title>greylistd-couchapp</title>
+    <link rel="stylesheet" href="style/main.css" type="text/css"/>
+
     <!-- <link rel="stylesheet" href="vendor/blueprint/screen.css" type="text/css" media="screen, projection"> -->
     <link rel="stylesheet" href="vendor/blueprint/src/grid.css" type="text/css" media="screen, projection">
-    <link rel="stylesheet" href="vendar/blueprint/print.css" type="text/css" media="print">	
-    <link rel="stylesheet" href="vendor/jquery.jqplot/jquery.jqplot.css" type="text/css">
+    <link rel="stylesheet" href="vendor/blueprint/print.css" type="text/css" media="print">	
   </head>
   <body>
-    <h1>greylistd-couchdb stats</h1>
+    <div id="account"></div>
+
+    <h1>greylistd statistics via couchapp</h1>
+
+    <div id="stats"></div>
 
     <div id="leftcolumn" class="prepend-1 span-10 colborder">
-      <h2>items</h2>
-      <ul id="items"></ul>
-      <div class="jqPlot" id="items-bar"></div>
-      <div class="jqPlot" id="items-pie"></div>
+      <h2>entry</h2>
+      <ul id="entry"></ul>
+      <div id="entry-pie" class="graph"></div>
     </div>
 
     <div id="rightcolumn" class="prepend-1 span-10 colborder last">
       <h2>count</h2>
       <ul id="count"></ul>
-      <div class="jqPlot" id="count-bar"></div>
-      <div class="jqPlot" id="count-pie"></div>
+      <div id="count-pie" class="graph"></div>
     </div>
 
-    <div id="netmask" class="prepend-1 span-22 colborder last">
-      <div class="jqPlot" id="netmask-grey-items-bar"></div>
-      <div class="jqPlot" id="netmask-white-items-bar"></div>
-      <div class="jqPlot" id="netmask-grey-count-bar"></div>
-      <div class="jqPlot" id="netmask-white-count-bar"></div>
+    <div id="sidebar">
+      <p>get the source: <a href="https://github.com/lefant/greylistd-couchapp">https://github.com/lefant/greylistd-couchapp</a></p>
     </div>
-
-    <h2 class="span-24">debug leftover</h2>
-    <ul id="stats"></ul>
-
   </body>
-
-  <script src="/_utils/script/json2.js"></script>
-  <script src="/_utils/script/jquery.js?1.3.1"></script>
-  <script src="/_utils/script/jquery.couch.js?0.9.0"></script>
-  <script src="vendor/couchapp/jquery.couchapp.js"></script>
-
-  <script src="vendor/jquery.jqplot/jquery.jqplot.js"></script>
-  <script src="vendor/jquery.jqplot/plugins/jqplot.categoryAxisRenderer.min.js"></script>
-  <script src="vendor/jquery.jqplot/plugins/jqplot.barRenderer.min.js"></script>
-  <script src="vendor/jquery.jqplot/plugins/jqplot.pieRenderer.min.js"></script>
-
+  <script src="vendor/couchapp/loader.js"></script>
+  <script type="text/javascript" src="script/jquery.flot.min.js"></script>
+  <script type="text/javascript" src="script/jquery.flot.pie.min.js"></script>
   <script type="text/javascript" charset="utf-8">
-    $.CouchApp(function(app) {
-      app.view("stats",{group_level: 1, success: function(json) {
-        $("#stats").html(json.rows.map(function(row) {
-          return '<li>'+row.key+' : '+row.value+'</li>';
-        }).join(''));
-      }});
-
-      app.view("items",{group_level: 1, success: function(json) {
-
-        $("#items").html(json.rows.map(function(row) {
-          return '<li>'+row.key+' : '+row.value+'</li>';
-        }).join(''));
-
-        data = [];
-        json.rows.map(function(row) {
-          data.push( [row.key, row.value] );
-        });
-
-        $.jqplot('items-bar', [data], {
-          title: 'items bar',
-          series:[
-            {label:'items', renderer:$.jqplot.BarRenderer}, 
-          ],
-          axes:{
-            xaxis:{renderer:$.jqplot.CategoryAxisRenderer}, 
-            yaxis:{min:0}
-          }
-        });
-
-        $.jqplot('items-pie', [data], {
-          title: 'items pie',
-          seriesDefaults:{renderer:$.jqplot.PieRenderer, rendererOptions:{sliceMargin:8}},
-          legend:{show:true}
-        });
-
-      }});
-
-      app.view("count",{group_level: 1, success: function(json) {
-
-        $("#count").html(json.rows.map(function(row) {
-          return '<li>'+row.key+' : '+row.value+'</li>';
-        }).join(''));
-
-        data = [];
-        json.rows.map(function(row) {
-          data.push( [row.key, row.value] );
-        });
-
-        $.jqplot('count-bar', [data], {
-          title: 'count bar',
-          series:[
-            {label:'count', renderer:$.jqplot.BarRenderer}, 
-          ],
-          axes:{
-            xaxis:{renderer:$.jqplot.CategoryAxisRenderer}, 
-            yaxis:{min:0}
-          }
-        });
-
-        $.jqplot('count-pie', [data], {
-          title: 'count pie',
-          seriesDefaults:{renderer:$.jqplot.PieRenderer, rendererOptions:{sliceMargin:8}},
-          legend:{show:true}
-        });
-
-      }});
-
-      ["netmask-grey-items","netmask-white-items","netmask-grey-count","netmask-white-count"].forEach(function(view)
-      {
-        app.view(view, {group_level: 1, success: function(json) {
-          var data = [];
-          json.rows.map(function(row) {
-            data.push( [row.key, row.value] );
-          });
-  
-          var jqplot = $.jqplot(view + '-bar', [data], {
-            title: view + ' bar',
-            series:[
-              {label:'count', renderer:$.jqplot.BarRenderer}, 
-            ],
-            axes:{
-              xaxis:{renderer:$.jqplot.CategoryAxisRenderer}, 
-              yaxis:{min:0}
-            }
-          });
-        }});
-      });
-
-    });
-
+    $.couch.app(function(app) {
+      $("#stats").evently("stats", app)
+    })
   </script>
-
 </html>
